@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Wiguel-IA</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="chat-container">
+    <h2>🤖 Wiguel-IA</h2>
+    <div id="chat-box"></div>
+    <div class="input-box">
+      <input type="text" id="user-input" placeholder="Escribe tu mensaje...">
+      <button onclick="sendMessage()">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("user-input").value;
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message: input})
+      });
+      const data = await res.json();
+
+      const chatBox = document.getElementById("chat-box");
+      chatBox.innerHTML += `<p><b>Tú:</b> ${input}</p>`;
+      chatBox.innerHTML += `<p><b>IA:</b> ${data.response}</p>`;
+      document.getElementById("user-input").value = "";
+    }
+  </script>
+</body>
+</html>
