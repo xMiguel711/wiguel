@@ -1,25 +1,33 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from model import generate_response
 from search import search_web
 
 app = Flask(__name__)
 
+# Guardar historial en memoria
+conversation_history = []
+
 @app.route("/")
-def index():
+def home():
     return render_template("index.html")
 
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    user_input = data.get("message", "")
+    user_input = data.get("message")
+
+    # Guardamos en historial
+    conversation_history.append({"role": "user", "content": user_input})
 
     # IA responde
-    response = generate_response(user_input)
+    response = generate_response(conversation_history)
 
-    # Si no sabe, busca online
+    # Si el modelo falla → buscar en internet
     if "no sé" in response.lower() or "no entiendo" in response.lower():
-        web_result = search_web(user_input)
-        response = f"No estaba seguro, pero encontré esto en la web:\n\n{web_result}"
+        web_info = search_web(user_input)
+        response = f"No estaba seguro, pero encontré esto:\n{web_info}"
+
+    conversation_history.append({"role": "assistant", "content": response})
 
     return jsonify({"response": response})
 
